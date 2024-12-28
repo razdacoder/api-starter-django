@@ -8,7 +8,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from rest_framework.settings import api_settings
 
 from . import utils
-from .compat import get_user_email, get_user_email_field_name
+from .compact import get_user_email, get_user_email_field_name
 from .config import settings
 from core.utils import validate_otp
 

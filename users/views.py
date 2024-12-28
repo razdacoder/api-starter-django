@@ -8,7 +8,7 @@ from rest_framework.response import Response
 from rest_framework.serializers import Serializer
 
 from . import signals, utils
-from .compat import get_user_email
+from .compact import get_user_email
 from .config import settings
 
 User = get_user_model()

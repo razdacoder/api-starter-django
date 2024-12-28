@@ -4,7 +4,7 @@ from django.test.signals import setting_changed
 from django.utils.functional import LazyObject
 from django.utils.module_loading import import_string
 
-USERS_SETTINGS_NAMESPACE = "USERS"
+USERS_SETTINGS_NAMESPACE = "USERS_AUTH"
 
 auth_module, user_model = django_settings.AUTH_USER_MODEL.rsplit(".", 1)
 
@@ -29,17 +29,13 @@ class ObjDict(dict):
 default_settings = {
     "USER_ID_FIELD": User._meta.pk.name,
     "LOGIN_FIELD": User.USERNAME_FIELD,
-    "SEND_ACTIVATION_EMAIL": False,
-    "SEND_CONFIRMATION_EMAIL": False,
-    "USER_CREATE_PASSWORD_RETYPE": False,
-    "SET_PASSWORD_RETYPE": False,
-    "PASSWORD_RESET_CONFIRM_RETYPE": False,
-    "SET_USERNAME_RETYPE": False,
-    "USERNAME_RESET_CONFIRM_RETYPE": False,
+    "SEND_ACTIVATION_EMAIL": True,
+    "SEND_CONFIRMATION_EMAIL": True,
+    "USER_CREATE_PASSWORD_RETYPE": True,
+    "SET_PASSWORD_RETYPE": True,
+    "PASSWORD_RESET_CONFIRM_RETYPE": True,
     "PASSWORD_RESET_SHOW_EMAIL_NOT_FOUND": False,
-    "USERNAME_RESET_SHOW_EMAIL_NOT_FOUND": False,
     "PASSWORD_CHANGED_EMAIL_CONFIRMATION": False,
-    "USERNAME_CHANGED_EMAIL_CONFIRMATION": False,
     "TOKEN_MODEL": "rest_framework.authtoken.models.Token",
     "SERIALIZERS": ObjDict(
         {
@@ -79,8 +75,8 @@ default_settings = {
     "CONSTANTS": ObjDict({"messages": "users.constants.Messages"}),
     "LOGOUT_ON_PASSWORD_CHANGE": False,
     "CREATE_SESSION_ON_LOGIN": False,
-    "SOCIAL_AUTH_TOKEN_STRATEGY": "users.social.token.jwt.TokenStrategy",
-    "SOCIAL_AUTH_ALLOWED_REDIRECT_URIS": [],
+    # "SOCIAL_AUTH_TOKEN_STRATEGY": "users.social.token.jwt.TokenStrategy",
+    # "SOCIAL_AUTH_ALLOWED_REDIRECT_URIS": [],
     "HIDE_USERS": True,
     "PERMISSIONS": ObjDict(
         {
@@ -99,20 +95,21 @@ default_settings = {
             "token_destroy": ["rest_framework.permissions.IsAuthenticated"],
         }
     ),
-    "WEBAUTHN": ObjDict(
-        {
-            "RP_NAME": "localhost",
-            "RP_ID": "localhost",
-            "ORIGIN": "http://localhost:8000",
-            "CHALLENGE_LENGTH": 32,
-            "UKEY_LENGTH": 20,
-            "SIGNUP_SERIALIZER": "users.webauthn.serializers.WebauthnCreateUserSerializer",
-            "LOGIN_SERIALIZER": "users.webauthn.serializers.WebauthnLoginSerializer",
-        }
-    ),
+    # "WEBAUTHN": ObjDict(
+    #     {
+    #         "RP_NAME": "localhost",
+    #         "RP_ID": "localhost",
+    #         "ORIGIN": "http://localhost:8000",
+    #         "CHALLENGE_LENGTH": 32,
+    #         "UKEY_LENGTH": 20,
+    #         "SIGNUP_SERIALIZER": "users.webauthn.serializers.WebauthnCreateUserSerializer",
+    #         "LOGIN_SERIALIZER": "users.webauthn.serializers.WebauthnLoginSerializer",
+    #     }
+    # ),
 }
 
-SETTINGS_TO_IMPORT = ["TOKEN_MODEL", "SOCIAL_AUTH_TOKEN_STRATEGY"]
+SETTINGS_TO_IMPORT = []
+# SOCIAL_AUTH_TOKEN_STRATEGY, TOKEN_MODEL
 
 
 class Settings:
