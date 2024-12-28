@@ -5,10 +5,12 @@
 {% endblock subject %}
 
 {% block text_body %}
-{% blocktrans %}You're receiving this email because you need to finish activation process on {{ site_name }}.{% endblocktrans %}
+{% blocktrans %}You're receiving this email because you need to complete the account activation process on {{ site_name }}.{% endblocktrans %}
 
-{% trans "Please go to the following page to activate account:" %}
-{{ protocol }}://{{ domain }}/{{ url|safe }}
+{% trans "Your One-Time Password (OTP) is:" %}
+{{ otp }}
+
+{% blocktrans %}This OTP is valid for {{ otp_validity }} minutes. Please use it to activate your account.{% endblocktrans %}
 
 {% trans "Thanks for using our site!" %}
 
@@ -16,13 +18,14 @@
 {% endblock text_body %}
 
 {% block html_body %}
-<p>{% blocktrans %}You're receiving this email because you need to finish activation process on {{ site_name }}.{% endblocktrans %}</p>
+<p>{% blocktrans %}You're receiving this email because you need to complete the account activation process on {{ site_name }}.{% endblocktrans %}</p>
 
-<p>{% trans "Please go to the following page to activate account:" %}</p>
-<p><a href="{{ protocol }}://{{ domain }}/{{ url|safe }}">{{ protocol }}://{{ domain }}/{{ url|safe }}</a></p>
+<p>{% trans "Your One-Time Password (OTP) is:" %}</p>
+<h2>{{ otp }}</h2>
+
+<p>{% blocktrans %}This OTP is valid for {{ otp_validity }} minutes. Please use it to activate your account.{% endblocktrans %}</p>
 
 <p>{% trans "Thanks for using our site!" %}</p>
 
 <p>{% blocktrans %}The {{ site_name }} team{% endblocktrans %}</p>
-
 {% endblock html_body %}

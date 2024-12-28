@@ -4,11 +4,13 @@ from django.core import exceptions as django_exceptions
 from django.db import IntegrityError, transaction
 from rest_framework import exceptions, serializers
 from rest_framework.exceptions import ValidationError
+from django.core.exceptions import ObjectDoesNotExist
 from rest_framework.settings import api_settings
 
 from . import utils
 from .compat import get_user_email, get_user_email_field_name
 from .config import settings
+from core.utils import validate_otp
 
 User = get_user_model()
 
@@ -156,42 +158,44 @@ class SendEmailResetSerializer(serializers.Serializer, UserFunctionsMixin):
         self.fields[self.email_field] = serializers.EmailField()
 
 
-class UidAndTokenSerializer(serializers.Serializer):
-    uid = serializers.CharField()
-    token = serializers.CharField()
+class OTPSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    otp = serializers.CharField()
 
     default_error_messages = {
-        "invalid_token": settings.CONSTANTS.messages.INVALID_TOKEN_ERROR,
-        "invalid_uid": settings.CONSTANTS.messages.INVALID_UID_ERROR,
+        "invalid_otp": settings.CONSTANTS.messages.INVALID_OTP_ERROR,
+        "invalid_email": settings.CONSTANTS.messages.EMAIL_NOT_FOUND
     }
 
+    
     def validate(self, attrs):
-        validated_data = super().validate(attrs)
+        email = attrs.get("email")
+        otp = attrs.get("otp")
 
-        # uid validation have to be here, because validate_<field_name>
-        # doesn't work with modelserializer
+        # Validate email and fetch user
         try:
-            uid = utils.decode_uid(self.initial_data.get("uid", ""))
-            self.user = User.objects.get(pk=uid)
-        except (User.DoesNotExist, ValueError, TypeError, OverflowError):
-            key_error = "invalid_uid"
+            self.user = User.objects.get(email=email)
+        except ObjectDoesNotExist:
             raise ValidationError(
-                {"uid": [self.error_messages[key_error]]}, code=key_error
+                {"email": [self.error_messages["invalid_email"]]},
+                code="invalid_email",
             )
 
-        is_token_valid = self.context["view"].token_generator.check_token(
-            self.user, self.initial_data.get("token", "")
-        )
-        if is_token_valid:
-            return validated_data
-        else:
-            key_error = "invalid_token"
+        # Validate OTP
+        try:
+            validate_otp(self.user, "activation", otp)
+        except ValueError:
             raise ValidationError(
-                {"token": [self.error_messages[key_error]]}, code=key_error
+                {"otp": [self.error_messages["invalid_otp"]]},
+                code="invalid_otp",
             )
 
+        return attrs
+                   
+            
 
-class ActivationSerializer(UidAndTokenSerializer):
+
+class ActivationSerializer(OTPSerializer):
     default_error_messages = {
         "stale_token": settings.CONSTANTS.messages.STALE_TOKEN_ERROR
     }
@@ -303,35 +307,15 @@ class SetPasswordRetypeSerializer(PasswordRetypeSerializer, CurrentPasswordSeria
     pass
 
 
-class PasswordResetConfirmSerializer(UidAndTokenSerializer, PasswordSerializer):
+class PasswordResetConfirmSerializer(OTPSerializer, PasswordSerializer):
     pass
 
 
 class PasswordResetConfirmRetypeSerializer(
-    UidAndTokenSerializer, PasswordRetypeSerializer
+    OTPSerializer, PasswordRetypeSerializer
 ):
     pass
-
-
-class UsernameResetConfirmSerializer(UidAndTokenSerializer, UsernameSerializer):
-    pass
-
-
-class UsernameResetConfirmRetypeSerializer(
-    UidAndTokenSerializer, UsernameRetypeSerializer
-):
-    pass
-
 
 class UserDeleteSerializer(CurrentPasswordSerializer):
     pass
 
-
-class SetUsernameSerializer(UsernameSerializer, CurrentPasswordSerializer):
-    class Meta:
-        model = User
-        fields = (settings.LOGIN_FIELD, "current_password")
-
-
-class SetUsernameRetypeSerializer(SetUsernameSerializer, UsernameRetypeSerializer):
-    pass
