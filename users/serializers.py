@@ -10,7 +10,8 @@ from rest_framework.settings import api_settings
 from . import utils
 from .compact import get_user_email, get_user_email_field_name
 from .config import settings
-from core.utils import validate_otp
+from core.utils import validate_otp, OTPPurposeEnum
+
 
 User = get_user_model()
 
@@ -155,19 +156,32 @@ class SendEmailResetSerializer(serializers.Serializer, UserFunctionsMixin):
         self.fields[self.email_field] = serializers.EmailField()
 
 
+
+
+
+
 class OTPSerializer(serializers.Serializer):
     email = serializers.EmailField()
     otp = serializers.CharField()
+    purpose = serializers.ChoiceField(
+        choices=[(tag.name, tag.value) for tag in OTPPurposeEnum]
+    )
 
     default_error_messages = {
         "invalid_otp": settings.CONSTANTS.messages.INVALID_OTP_ERROR,
         "invalid_email": settings.CONSTANTS.messages.EMAIL_NOT_FOUND
     }
 
+    def validate_purpose(self, value):
+        if value not in [tag.value for tag in OTPPurposeEnum]:
+            raise serializers.ValidationError("Invalid purpose.")
+        return value
+
     
     def validate(self, attrs):
         email = attrs.get("email")
         otp = attrs.get("otp")
+        purpose = attrs.get("purpose")
 
         # Validate email and fetch user
         try:
@@ -180,7 +194,7 @@ class OTPSerializer(serializers.Serializer):
 
         # Validate OTP
         try:
-            validate_otp(self.user, "activation", otp)
+            validate_otp(self.user, purpose, otp)
         except ValueError:
             raise ValidationError(
                 {"otp": [self.error_messages["invalid_otp"]]},

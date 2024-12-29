@@ -3,7 +3,7 @@ from django.views.generic.base import ContextMixin
 from django.template.context import make_context
 from django.template.loader import get_template
 from django.conf import settings as django_settings
-from .config import settings
+from django.contrib.sites.shortcuts import get_current_site
 
 class BaseEmailMessage(mail.EmailMultiAlternatives, ContextMixin):
     _node_map = {

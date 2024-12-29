@@ -1,11 +1,9 @@
 from django.contrib.sites.shortcuts import get_current_site
-
-
 from . import utils
 from django.conf import settings as django_settings
 from .config import settings
 from core.email import BaseEmailMessage
-from core.utils import generate_otp
+from core.utils import generate_otp, OTPPurposeEnum
 
 
 
@@ -32,7 +30,7 @@ class ActivationEmail(BaseUserEmail):
         context = super().get_context_data()
 
         user = context.get("user")
-        otp = generate_otp(user, "activation")
+        otp = generate_otp(user, OTPPurposeEnum.ACTIVATION)
         context["otp"] = otp
         context["otp_validity"] = 10
         return context
@@ -49,7 +47,7 @@ class PasswordResetEmail(BaseUserEmail):
         context = super().get_context_data()
 
         user = context.get("user")
-        otp = generate_otp(user, "password_reset")
+        otp = generate_otp(user, OTPPurposeEnum.PASSWORD_RESET)
         context["otp"] = otp
         context["otp_validity"] = 10
         return context

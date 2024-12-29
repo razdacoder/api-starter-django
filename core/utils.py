@@ -1,8 +1,13 @@
 from django.core.cache import cache
 from django.utils.crypto import get_random_string
+from enum import Enum
 
 
-def generate_otp(user, purpose, ttl=600, cooldown=60):
+class OTPPurposeEnum(Enum):
+    ACTIVATION = "activation"
+    PASSWORD_RESET = "password_reset"
+
+def generate_otp(user, purpose: OTPPurposeEnum, ttl=600, cooldown=60):
     """
     Generate a One-Time Password (OTP) for a specific user and purpose.
     Add a cooldown period for resending OTPs.
@@ -50,3 +55,4 @@ def validate_otp(user, purpose, provided_otp):
     # OTP is valid, delete it to prevent reuse
     cache.delete(cache_key)
     return True
+
