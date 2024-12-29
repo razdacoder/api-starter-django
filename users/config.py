@@ -63,11 +63,11 @@ default_settings = {
            
         }
     ),
-    "EMAIL_FRONTEND_DOMAIN": None,
-    "EMAIL_FRONTEND_PROTOCOL": None,
-    "EMAIL_FRONTEND_SITE_NAME": None,
+    "EMAIL_FRONTEND_DOMAIN": "http://localhost:3000",
+    "EMAIL_FRONTEND_PROTOCOL": "http",
+    "EMAIL_FRONTEND_SITE_NAME": "Django API Starter",
     "CONSTANTS": ObjDict({"messages": "users.constants.Messages"}),
-    "LOGOUT_ON_PASSWORD_CHANGE": False,
+    "LOGOUT_ON_PASSWORD_CHANGE": True,
     "CREATE_SESSION_ON_LOGIN": False,
     # "SOCIAL_AUTH_TOKEN_STRATEGY": "users.social.token.jwt.TokenStrategy",
     # "SOCIAL_AUTH_ALLOWED_REDIRECT_URIS": [],

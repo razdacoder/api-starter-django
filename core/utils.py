@@ -12,8 +12,8 @@ def generate_otp(user, purpose: OTPPurposeEnum, ttl=600, cooldown=60):
     Generate a One-Time Password (OTP) for a specific user and purpose.
     Add a cooldown period for resending OTPs.
     """
-    cache_key = f"otp:{purpose}:{user.pk}"
-    otp_cooldown_key = f"otp_cooldown:{purpose}:{user.pk}"
+    cache_key = f"otp:{purpose}:{user['_id']}"
+    otp_cooldown_key = f"otp_cooldown:{purpose}:{user['_id']}"
     
     if cache.get(otp_cooldown_key):
         raise Exception("Please wait before requesting another OTP.")
@@ -43,7 +43,7 @@ def validate_otp(user, purpose, provided_otp):
     Raises:
         ValueError: If the OTP is invalid or expired.
     """
-    cache_key = f"otp:{purpose}:{user.pk}"
+    cache_key = f"otp:{purpose}:{user['_id']}"
     stored_otp = cache.get(cache_key)
 
     if stored_otp is None:

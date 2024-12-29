@@ -10,6 +10,7 @@ from rest_framework.serializers import Serializer
 from . import signals, utils
 from .compact import get_user_email
 from .config import settings
+from .tasks import send_activation_email, send_confirmation_email, send_password_reset_email, send_password_changed_confirmation_email
 
 User = get_user_model()
 
@@ -120,12 +121,13 @@ class UserViewSet(viewsets.ModelViewSet):
             sender=self.__class__, user=user, request=self.request
         )
 
-        context = {"user": user}
         to = [get_user_email(user)]
+        user_serialized = settings.SERIALIZERS.current_user(user)
+        context = {"user": user_serialized.data}
         if settings.SEND_ACTIVATION_EMAIL:
-            settings.EMAIL.activation(self.request, context).send(to)
+            send_activation_email.delay(context=context, to=to)
         elif settings.SEND_CONFIRMATION_EMAIL:
-            settings.EMAIL.confirmation(self.request, context).send(to)
+            send_confirmation_email.delay(context=context, to=to)
 
     def perform_update(self, serializer, *args, **kwargs):
         super().perform_update(serializer, *args, **kwargs)
@@ -136,9 +138,10 @@ class UserViewSet(viewsets.ModelViewSet):
 
         # should we send activation email after update?
         if settings.SEND_ACTIVATION_EMAIL and not user.is_active:
-            context = {"user": user}
             to = [get_user_email(user)]
-            settings.EMAIL.activation(self.request, context).send(to)
+            user_serialized = settings.SERIALIZERS.current_user(user)
+            context = {"user": user_serialized.data}
+            send_activation_email.delay(context, to)
 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -175,9 +178,10 @@ class UserViewSet(viewsets.ModelViewSet):
         )
 
         if settings.SEND_CONFIRMATION_EMAIL:
-            context = {"user": user}
             to = [get_user_email(user)]
-            settings.EMAIL.confirmation(self.request, context).send(to)
+            user_serialized = settings.SERIALIZERS.current_user(user)
+            context = {"user": user_serialized.data}
+            send_confirmation_email.delay(context, to)
 
         return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -191,9 +195,10 @@ class UserViewSet(viewsets.ModelViewSet):
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
         if user:
-            context = {"user": user}
             to = [get_user_email(user)]
-            settings.EMAIL.activation(self.request, context).send(to)
+            user_serialized = settings.SERIALIZERS.current_user(user)
+            context = {"user": user_serialized.data}
+            send_activation_email.delay(context, to)
 
         return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -206,9 +211,10 @@ class UserViewSet(viewsets.ModelViewSet):
         self.request.user.save()
 
         if settings.PASSWORD_CHANGED_EMAIL_CONFIRMATION:
-            context = {"user": self.request.user}
-            to = [get_user_email(self.request.user)]
-            settings.EMAIL.password_changed_confirmation(self.request, context).send(to)
+            to = [get_user_email(user)]
+            user_serialized = settings.SERIALIZERS.current_user(user)
+            context = {"user": user_serialized.data}
+            send_password_changed_confirmation_email.delay(context, to)
 
         if settings.LOGOUT_ON_PASSWORD_CHANGE:
             utils.logout_user(self.request)
@@ -223,9 +229,10 @@ class UserViewSet(viewsets.ModelViewSet):
         user = serializer.get_user()
 
         if user:
-            context = {"user": user}
             to = [get_user_email(user)]
-            settings.EMAIL.password_reset(self.request, context).send(to)
+            user_serialized = settings.SERIALIZERS.current_user(user)
+            context = {"user": user_serialized.data}
+            send_password_reset_email.delay( context, to)
 
         return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -240,23 +247,8 @@ class UserViewSet(viewsets.ModelViewSet):
         serializer.user.save()
 
         if settings.PASSWORD_CHANGED_EMAIL_CONFIRMATION:
-            context = {"user": serializer.user}
-            to = [get_user_email(serializer.user)]
-            settings.EMAIL.password_changed_confirmation(self.request, context).send(to)
-        return Response(status=status.HTTP_204_NO_CONTENT)
-
-
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        new_username = serializer.data["new_" + User.USERNAME_FIELD]
-
-        setattr(serializer.user, User.USERNAME_FIELD, new_username)
-        if hasattr(serializer.user, "last_login"):
-            serializer.user.last_login = now()
-        serializer.user.save()
-
-        if settings.USERNAME_CHANGED_EMAIL_CONFIRMATION:
-            context = {"user": serializer.user}
-            to = [get_user_email(serializer.user)]
-            settings.EMAIL.username_changed_confirmation(self.request, context).send(to)
+            to = [get_user_email(user)]
+            user_serialized = settings.SERIALIZERS.current_user(user)
+            context = {"user": user_serialized.data}
+            send_password_changed_confirmation_email.delay(context, to)
         return Response(status=status.HTTP_204_NO_CONTENT)

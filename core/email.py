@@ -13,10 +13,9 @@ class BaseEmailMessage(mail.EmailMultiAlternatives, ContextMixin):
     }
     template_name = None
 
-    def __init__(self, request=None, context=None, template_name=None, *args, **kwargs):
+    def __init__(self,  context=None, template_name=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
-
-        self.request = request
+       
         self.context = {} if context is None else context
         self.html = None
 
@@ -26,25 +25,14 @@ class BaseEmailMessage(mail.EmailMultiAlternatives, ContextMixin):
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         context = dict(ctx, **self.context)
-        if self.request:
-            site = get_current_site(self.request)
-            domain = context.get("domain") or (
-                getattr(django_settings, "DOMAIN", "") or site.domain
-            )
-            protocol = context.get("protocol") or (
-                "https" if self.request.is_secure() else "http"
-            )
-            site_name = context.get("site_name") or (
-                getattr(django_settings, "SITE_NAME", "") or site.name
-            )
-            user = context.get("user") or self.request.user
-        else:
-            domain = context.get("domain") or getattr(django_settings, "DOMAIN", "")
-            protocol = context.get("protocol") or "http"
-            site_name = context.get("site_name") or getattr(
-                django_settings, "SITE_NAME", ""
-            )
-            user = context.get("user")
+       
+     
+        domain = context.get("domain") or getattr(django_settings, "DOMAIN", "")
+        protocol = context.get("protocol") or "http"
+        site_name = context.get("site_name") or getattr(
+            django_settings, "SITE_NAME", ""
+        )
+        user = context.get("user")
 
         context.update(
             {
@@ -57,7 +45,7 @@ class BaseEmailMessage(mail.EmailMultiAlternatives, ContextMixin):
         return context
 
     def render(self):
-        context = make_context(self.get_context_data(), request=self.request)
+        context = make_context(self.get_context_data())
         template = get_template(self.template_name)
         with context.bind_template(template.template):
             for node in template.template.nodelist:
