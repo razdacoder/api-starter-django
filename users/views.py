@@ -245,36 +245,7 @@ class UserViewSet(viewsets.ModelViewSet):
             settings.EMAIL.password_changed_confirmation(self.request, context).send(to)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-    @action(["post"], detail=False, url_path=f"set_{User.USERNAME_FIELD}")
-    def set_username(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        user = self.request.user
-        new_username = serializer.data["new_" + User.USERNAME_FIELD]
 
-        setattr(user, User.USERNAME_FIELD, new_username)
-        user.save()
-        if settings.USERNAME_CHANGED_EMAIL_CONFIRMATION:
-            context = {"user": user}
-            to = [get_user_email(user)]
-            settings.EMAIL.username_changed_confirmation(self.request, context).send(to)
-        return Response(status=status.HTTP_204_NO_CONTENT)
-
-    @action(["post"], detail=False, url_path=f"reset_{User.USERNAME_FIELD}")
-    def reset_username(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        user = serializer.get_user()
-
-        if user:
-            context = {"user": user}
-            to = [get_user_email(user)]
-            settings.EMAIL.username_reset(self.request, context).send(to)
-
-        return Response(status=status.HTTP_204_NO_CONTENT)
-
-    @action(["post"], detail=False, url_path=f"reset_{User.USERNAME_FIELD}_confirm")
-    def reset_username_confirm(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         new_username = serializer.data["new_" + User.USERNAME_FIELD]
