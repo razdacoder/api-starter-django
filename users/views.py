@@ -77,12 +77,6 @@ class UserViewSet(viewsets.ModelViewSet):
             self.permission_classes = settings.PERMISSIONS.password_reset_confirm
         elif self.action == "set_password":
             self.permission_classes = settings.PERMISSIONS.set_password
-        elif self.action == "set_username":
-            self.permission_classes = settings.PERMISSIONS.set_username
-        elif self.action == "reset_username":
-            self.permission_classes = settings.PERMISSIONS.username_reset
-        elif self.action == "reset_username_confirm":
-            self.permission_classes = settings.PERMISSIONS.username_reset_confirm
         elif self.action == "destroy" or (
             self.action == "me" and self.request and self.request.method == "DELETE"
         ):
@@ -112,16 +106,6 @@ class UserViewSet(viewsets.ModelViewSet):
             if settings.SET_PASSWORD_RETYPE:
                 return settings.SERIALIZERS.set_password_retype
             return settings.SERIALIZERS.set_password
-        elif self.action == "set_username":
-            if settings.SET_USERNAME_RETYPE:
-                return settings.SERIALIZERS.set_username_retype
-            return settings.SERIALIZERS.set_username
-        elif self.action == "reset_username":
-            return settings.SERIALIZERS.username_reset
-        elif self.action == "reset_username_confirm":
-            if settings.USERNAME_RESET_CONFIRM_RETYPE:
-                return settings.SERIALIZERS.username_reset_confirm_retype
-            return settings.SERIALIZERS.username_reset_confirm
         elif self.action == "me":
             return settings.SERIALIZERS.current_user
 

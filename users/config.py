@@ -45,11 +45,6 @@ default_settings = {
             "password_reset_confirm_retype": "users.serializers.PasswordResetConfirmRetypeSerializer",
             "set_password": "users.serializers.SetPasswordSerializer",
             "set_password_retype": "users.serializers.SetPasswordRetypeSerializer",
-            "set_username": "users.serializers.SetUsernameSerializer",
-            "set_username_retype": "users.serializers.SetUsernameRetypeSerializer",
-            "username_reset": "users.serializers.SendEmailResetSerializer",
-            "username_reset_confirm": "users.serializers.UsernameResetConfirmSerializer",
-            "username_reset_confirm_retype": "users.serializers.UsernameResetConfirmRetypeSerializer",
             "user_create": "users.serializers.UserCreateSerializer",
             "user_create_password_retype": "users.serializers.UserCreatePasswordRetypeSerializer",
             "user_delete": "users.serializers.UserDeleteSerializer",
@@ -65,8 +60,7 @@ default_settings = {
             "confirmation": "users.email.ConfirmationEmail",
             "password_reset": "users.email.PasswordResetEmail",
             "password_changed_confirmation": "users.email.PasswordChangedConfirmationEmail",
-            "username_changed_confirmation": "users.email.UsernameChangedConfirmationEmail",
-            "username_reset": "users.email.UsernameResetEmail",
+           
         }
     ),
     "EMAIL_FRONTEND_DOMAIN": None,
